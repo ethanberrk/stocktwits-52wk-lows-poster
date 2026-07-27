@@ -5,14 +5,14 @@ pipeline made. This is deliberately a DIFFERENT data path than the poster
 grading its own homework.
 
 Checks
-  truth      each posted ticker really printed a 52-week high that day
-             (day high >= max High of up to 252 prior sessions, 0.1% tol)
+  truth      each posted ticker really printed a 52-week low that day
+             (day low <= min Low of up to 252 prior sessions, 0.1% tol)
   rules      replayed over the whole posted log + git history:
              no duplicate (ticker, day); no consecutive-trading-day repost;
              <= MAX_PER_DAY per day; <= MAX_PER_TICK added per tick commit;
              no weekend posts
   artifacts  output/<day>/<TICKER>.png is a real PNG; .txt starts with the
-             cashtag and mentions the 52-week high; state and files agree
+             cashtag and mentions the 52-week low; state and files agree
 
 Usage
   python scripts/verify_day.py 2026-07-02 [...]   audit specific day(s)
@@ -116,20 +116,22 @@ def check_truth(ticker: str, d: date) -> None:
         report("FAIL", "truth", f"{ticker}: did not trade on {d}")
         return
     i = days.index(d)
-    prior = df["High"].iloc[max(0, i - 252):i]
+    prior = df["Low"].iloc[max(0, i - 252):i]
     if prior.empty:
         report("WARN", "truth", f"{ticker}: no prior sessions (IPO day?); skipping")
         return
-    prior_max, day_high = float(prior.max()), float(df["High"].iloc[i])
-    margin = (day_high - prior_max) / prior_max
-    detail = (f"{ticker} {d}: day high {day_high:.2f} vs prior-252-session max "
-              f"{prior_max:.2f} ({margin:+.2%})")
-    if day_high >= prior_max * (1 - TRUTH_TOLERANCE):
+    prior_min, day_low = float(prior.min()), float(df["Low"].iloc[i])
+    margin = (day_low - prior_min) / prior_min
+    detail = (f"{ticker} {d}: day low {day_low:.2f} vs prior-252-session min "
+              f"{prior_min:.2f} ({margin:+.2%})")
+    # Tolerance inverts with the comparison: a permissive band ABOVE the prior
+    # minimum. (1 - TOL) here would be stricter than exact and FAIL every post.
+    if day_low <= prior_min * (1 + TRUTH_TOLERANCE):
         level = "PASS" if len(prior) >= 200 else "WARN"
         suffix = "" if len(prior) >= 200 else f" [only {len(prior)} prior sessions]"
         report(level, "truth", detail + suffix)
     else:
-        report("FAIL", "truth", detail + " — NOT a 52-week high")
+        report("FAIL", "truth", detail + " — NOT a 52-week low")
 
 # ------------------------------------------------------------- artifacts ----
 
@@ -159,7 +161,7 @@ def check_artifacts(posted: list[dict], d: date) -> None:
             report("FAIL", "artifacts", f"{t} {d}: missing .txt")
         else:
             text = txt.read_text(encoding="utf-8")
-            if text.startswith(f"${st_symbol(t)} ") and "52-week high" in text:
+            if text.startswith(f"${st_symbol(t)} ") and "52-week low" in text:
                 report("PASS", "artifacts", f"{t} {d}: copy ok: {text!r}")
             else:
                 report("FAIL", "artifacts", f"{t} {d}: unexpected copy: {text!r}")

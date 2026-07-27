@@ -2,6 +2,8 @@ import importlib.util
 import sys
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parent.parent
+
 spec = importlib.util.spec_from_file_location(
     "verify_day", Path(__file__).parent.parent / "scripts" / "verify_day.py")
 verify_day = importlib.util.module_from_spec(spec)
@@ -38,3 +40,18 @@ def test_weekend_post_fails():
 def test_daily_cap_violation_fails():
     posted = [entry(f"T{i}", "2026-07-02") for i in range(21)]
     assert run_rules(posted) > 0
+
+def test_truth_check_uses_the_low_side_and_a_permissive_tolerance():
+    """The tolerance MUST invert with the comparison.
+
+    Highs pass when day_high >= prior_max * (1 - TOL) — a permissive band
+    below the max. Lows pass when day_low <= prior_min * (1 + TOL) — a
+    permissive band above the min. Keeping (1 - TOL) on the low side turns
+    a permissive tolerance into a stricter one and FAILs every real post.
+    """
+    src = (ROOT / "scripts" / "verify_day.py").read_text()
+    assert 'df["Low"]' in src and 'df["High"]' not in src
+    assert "prior.min()" in src and "prior.max()" not in src
+    assert "(1 + TRUTH_TOLERANCE)" in src
+    assert "(1 - TRUTH_TOLERANCE)" not in src
+    assert "52-week low" in src and "52-week high" not in src
