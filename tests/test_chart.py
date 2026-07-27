@@ -37,7 +37,8 @@ def test_fetch_history_appends_today_candle_when_stale(monkeypatch):
                              {"t": "2026-07-08", "o": 37.0, "h": 37.5,
                               "l": 35.1, "c": 37.47}]}
         if "api/quotes" in url:
-            return {"data": {"p": 42.39, "o": 38.33, "h": 42.67, "l": 38.26}}
+            return {"data": {"p": 42.39, "o": 38.33, "h": 42.67, "l": 38.26,
+                             "td": "2026-07-09"}}
         raise AssertionError(f"unexpected url {url}")
 
     monkeypatch.setattr(chart, "get_json", fake_get_json)
@@ -57,7 +58,8 @@ def test_fetch_history_converts_dash_ticker_to_dot_for_stockanalysis(monkeypatch
                              {"t": "2026-07-08", "o": 37.0, "h": 37.5,
                               "l": 35.1, "c": 37.47}]}
         if "api/quotes" in url:
-            return {"data": {"p": 42.39, "o": 38.33, "h": 42.67, "l": 38.26}}
+            return {"data": {"p": 42.39, "o": 38.33, "h": 42.67, "l": 38.26,
+                             "td": "2026-07-09"}}
         raise AssertionError(f"unexpected url {url}")
 
     monkeypatch.setattr(chart, "get_json", fake_get_json)
@@ -80,7 +82,7 @@ def test_fetch_history_raises_when_stale_and_quote_is_none(monkeypatch):
         raise AssertionError(f"unexpected url {url}")
 
     monkeypatch.setattr(chart, "get_json", fake_get_json)
-    with pytest.raises(chart.ChartError, match="quote unusable"):
+    with pytest.raises(chart.ChartError, match="stale or unusable"):
         chart._fetch_history("TXG", today=date(2026, 7, 9))
 
 
@@ -92,11 +94,12 @@ def test_fetch_history_raises_when_stale_and_quote_missing_open(monkeypatch):
                              {"t": "2026-07-08", "o": 37.0, "h": 37.5,
                               "l": 35.1, "c": 37.47}]}
         if "api/quotes" in url:
-            return {"data": {"p": 42.39, "o": 0, "h": 42.67, "l": 38.26}}
+            return {"data": {"p": 42.39, "o": 0, "h": 42.67, "l": 38.26,
+                             "td": "2026-07-09"}}
         raise AssertionError(f"unexpected url {url}")
 
     monkeypatch.setattr(chart, "get_json", fake_get_json)
-    with pytest.raises(chart.ChartError, match="quote unusable"):
+    with pytest.raises(chart.ChartError, match="stale or unusable"):
         chart._fetch_history("TXG", today=date(2026, 7, 9))
 
 
@@ -166,3 +169,62 @@ def test_legend_text_change_is_vs_previous_close():
 def test_legend_text_single_candle_uses_open():
     text = chart._legend_text([["2026-07-09", 20.0, 30.0, 20.0, 25.0]])
     assert "+5.00 (+25.00%)" in text
+
+
+def test_stale_quote_is_not_appended_as_todays_candle(monkeypatch):
+    """stockanalysis returns the LAST session's quote for a name that hasn't
+    traded today (TAP.A on 2026-07-27 returned td=2026-07-24). Appending it
+    would draw a candle dated today from Friday's prices, under a headline
+    claiming a new low today."""
+    def fake_get_json(url, **kw):
+        if "history" in url:
+            return {"data": [{"t": "2025-07-10", "o": 20.0, "h": 20.5,
+                              "l": 19.8, "c": 20.2},
+                             {"t": "2026-07-24", "o": 39.51, "h": 39.51,
+                              "l": 39.51, "c": 39.51}]}
+        if "api/quotes" in url:
+            return {"data": {"p": 39.51, "o": 39.51, "h": 39.51,
+                             "l": 39.51, "td": "2026-07-24"}}
+        raise AssertionError(f"unexpected url {url}")
+
+    monkeypatch.setattr(chart, "get_json", fake_get_json)
+    with pytest.raises(chart.ChartError, match="stale"):
+        chart._fetch_history("TAP-A", today=date(2026, 7, 27))
+
+
+def test_fresh_quote_is_appended_as_todays_candle(monkeypatch):
+    def fake_get_json(url, **kw):
+        if "history" in url:
+            return {"data": [{"t": "2025-07-10", "o": 20.0, "h": 20.5,
+                              "l": 19.8, "c": 20.2},
+                             {"t": "2026-07-24", "o": 76.0, "h": 76.4,
+                              "l": 74.9, "c": 74.90}]}
+        if "api/quotes" in url:
+            return {"data": {"p": 74.31, "o": 74.74, "h": 75.2,
+                             "l": 73.52, "td": "2026-07-27"}}
+        raise AssertionError(f"unexpected url {url}")
+
+    monkeypatch.setattr(chart, "get_json", fake_get_json)
+    rows = chart._fetch_history("CCI", today=date(2026, 7, 27))
+    assert rows[-1] == ["2026-07-27", 74.74, 75.2, 73.52, 74.31]
+
+
+def test_y_axis_floor_never_goes_negative(monkeypatch):
+    """A name down 90%+ over the year pads below zero on a linear axis."""
+    captured = {}
+    real_subplots = chart.plt.subplots
+
+    def spy_subplots(*a, **kw):
+        fig, ax = real_subplots(*a, **kw)
+        real_set_ylim = ax.set_ylim
+        def spy_set_ylim(lo, hi):
+            captured["ylim"] = (lo, hi)
+            return real_set_ylim(lo, hi)
+        ax.set_ylim = spy_set_ylim
+        return fig, ax
+
+    monkeypatch.setattr(chart.plt, "subplots", spy_subplots)
+    rows = [[f"2026-01-{d:02d}", 100.0, 101.0, 99.0, 100.0] for d in range(1, 10)]
+    rows += [[f"2026-02-{d:02d}", 1.0, 1.1, 0.4, 0.5] for d in range(1, 10)]
+    chart._render_png(_c(), rows)
+    assert captured["ylim"][0] >= 0.0, f"y-axis floor {captured['ylim'][0]} < 0"

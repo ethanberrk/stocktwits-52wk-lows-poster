@@ -4,8 +4,8 @@ Replaces the chart-img API: history comes keyless from stockanalysis.com and
 the chart is drawn in-process in the TradingView light style (up #089981,
 down #F23645, recessive grid, right-hand price axis, last-price pill). The
 daily history endpoint lags one session, so today's candle is appended from
-the live quote — a 52wk-high post whose chart stopped yesterday would be
-missing its own move.
+the live quote — a 52wk-low post whose chart stopped yesterday would be missing
+its own move.
 """
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -50,14 +50,19 @@ def _fetch_history(ticker: str, today: date | None = None) -> list[list]:
             f"{cutoff} — likely a recent IPO, 1Y chart would mislead")
     if hist[-1][0] < today.isoformat():
         q = (get_json(config.SA_QUOTE_URL.format(ticker=sa_symbol)) or {}).get("data")
-        if q and q.get("p") and q.get("o"):
+        # `td` is the quote's own trade date. Without checking it, a name that
+        # did not trade today gets the LAST session's prices drawn as today's
+        # candle — a chart dated today built from stale data, under a headline
+        # claiming a new low today.
+        if q and q.get("p") and q.get("o") and q.get("td") == today.isoformat():
             p = float(q["p"])
             hist.append([today.isoformat(), float(q["o"]),
                          float(q.get("h") or p), float(q.get("l") or p), p])
         else:
             raise ChartError(
-                f"{ticker}: history ends {hist[-1][0]}, live quote unusable "
-                f"— chart would miss today's move")
+                f"{ticker}: history ends {hist[-1][0]} and the live quote is "
+                f"stale or unusable (td={(q or {}).get('td')!r}) "
+                f"— chart would miss or misdate today's move")
     return hist
 
 
@@ -78,6 +83,10 @@ def _render_png(candidate: Candidate, hist: list[list]) -> bytes:
     fig.patch.set_facecolor("white")
     ax.set_facecolor("white")
     fig.subplots_adjust(left=0.012, right=0.925, top=0.90, bottom=0.075)
+    # Both axes get explicit limits below (set_xlim/set_ylim); turn autoscale
+    # off up front so the month-boundary axvline() calls below don't trigger
+    # an intermediate implicit autoscale recompute before our explicit calls.
+    ax.set_autoscale_on(False)
 
     n = len(hist)
     body_w = 0.7  # in index units; thin at 1Y density
@@ -110,7 +119,7 @@ def _render_png(candidate: Candidate, hist: list[list]) -> bytes:
     lo = min(r[3] for r in hist)
     hi = max(r[2] for r in hist)
     pad = (hi - lo) * 0.06 or 1
-    ax.set_ylim(lo - pad, hi + pad)
+    ax.set_ylim(max(0.0, lo - pad), hi + pad)
 
     # last-price dashed line + pill on the price axis
     last_o, last_c = hist[-1][1], hist[-1][4]
