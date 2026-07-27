@@ -1,6 +1,7 @@
 from datetime import datetime, timezone, date
 import os
 import pytest
+import config
 import run
 from src.chart import ChartError
 from src.source.base import Candidate, LowsSource
@@ -132,3 +133,48 @@ def test_publish_error_skips_ticker_and_continues(tmp_path):
     assert got == ["MID"]
     status = {e["ticker"]: e["status"] for e in state.load_posted(sp)}
     assert status == {"BIG": "pending", "MID": "posted"}
+
+def test_tick_walks_past_an_unchartable_top_pick(tmp_path):
+    """The regression test for tick starvation.
+
+    SPCX/SKHY on 2026-07-27: the two largest names at new lows were both
+    recent listings that trip MIN_HISTORY_DAYS. Picking the top N up front
+    would have posted nothing that day, every tick, all day.
+    """
+    sp = tmp_path / "posted.json"
+    pub = SpyPublisher()
+
+    def chart(c):
+        if c.ticker in ("SPCX", "SKHY"):
+            raise ChartError(f"{c.ticker}: recent IPO, 1Y chart would mislead")
+        return b"PNG"
+
+    got = run.tick(FakeSource([cand("SPCX", 1.5e12), cand("SKHY", 1.0e12),
+                               cand("CCI", 3.2e10), cand("PSKY", 8.9e9)]),
+                   pub, chart, sp, NOW)
+    assert got == ["CCI", "PSKY"]           # 2-per-tick cap, walked past both
+    assert [e["ticker"] for e in state.load_posted(sp)] == ["CCI", "PSKY"]
+
+def test_skipped_name_is_not_recorded_and_stays_eligible(tmp_path):
+    sp = tmp_path / "posted.json"
+    def chart(c):
+        if c.ticker == "SPCX":
+            raise ChartError("recent IPO")
+        return b"PNG"
+    run.tick(FakeSource([cand("SPCX", 1.5e12), cand("CCI", 3.2e10)]),
+             SpyPublisher(), chart, sp, NOW)
+    # no state entry for SPCX at all -> nothing blocks it on a later tick
+    assert "SPCX" not in [e["ticker"] for e in state.load_posted(sp)]
+
+def test_tick_stops_after_max_candidate_attempts(tmp_path, monkeypatch):
+    """Bound the walk: a degraded chart source must not run the tick past
+    the workflow timeout, which would silently queue and drop later ticks."""
+    monkeypatch.setattr(config, "MAX_CANDIDATE_ATTEMPTS", 3)
+    calls = []
+    def chart(c):
+        calls.append(c.ticker)
+        raise ChartError("stockanalysis is down")
+    got = run.tick(FakeSource([cand(f"T{i}", 9e9 - i) for i in range(50)]),
+                   SpyPublisher(), chart, tmp_path / "p.json", NOW)
+    assert got == []
+    assert len(calls) == 3

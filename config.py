@@ -52,3 +52,12 @@ MIN_DOLLAR_VOLUME = 5_000_000
 # truncating the real market-cap floor to ~$6.6B (measured 2026-07-27). With
 # it: 2,766 rows down to a true $1.001B floor, no truncation.
 SCREEN_EXCHANGES = ("NMS", "NYQ", "NGM", "NCM", "ASE")
+
+# Bound the walk-down. Per candidate the Stocktwits symbol check allows 15s
+# and each get_json retries 4x at 12s, so an unbounded walk over a selloff-day
+# lows list can outrun the workflow timeout — and because tick.yml uses
+# concurrency without cancel-in-progress, a stuck run queues later dispatches
+# until GitHub drops them and the feed goes dark silently.
+# Counts candidates EXAMINED, not charts fetched: the symbol check runs first
+# and costs real time even when no chart is attempted.
+MAX_CANDIDATE_ATTEMPTS = 20

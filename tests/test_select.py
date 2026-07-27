@@ -19,20 +19,26 @@ def test_validate_rejects_implausible_count():
         select.validate(cands)
     select.validate(cands[:10])  # plausible: no raise
 
-def test_pick_filters_mcap_and_ranks_desc():
+def test_ranked_eligible_filters_mcap_and_ranks_desc():
     cands = [cand("SMALL", 5e8), cand("MID", 5e9), cand("BIG", 5e11)]
-    got = select.pick(cands, [], TODAY)
-    assert [c.ticker for c in got] == ["BIG", "MID"]  # SMALL under $1B; 2-per-tick cap
+    got = select.ranked_eligible(cands, [], TODAY)
+    assert [c.ticker for c in got] == ["BIG", "MID"]   # SMALL under $1B
 
-def test_pick_respects_cooldown():
+def test_ranked_eligible_is_uncapped():
+    # the tick walks this list; capping it here would reintroduce starvation
+    cands = [cand(f"T{i}", 2e9 + i) for i in range(50)]
+    assert len(select.ranked_eligible(cands, [], TODAY)) == 50
+
+def test_ranked_eligible_respects_cooldown():
     cands = [cand("A", 3e9), cand("B", 2e9)]
     posted = [posted_entry("A", date(2026, 6, 30))]  # posted Tuesday -> blocked Wed
-    assert [c.ticker for c in select.pick(cands, posted, TODAY)] == ["B"]
+    assert [c.ticker for c in select.ranked_eligible(cands, posted, TODAY)] == ["B"]
 
-def test_pick_respects_daily_cap():
-    cands = [cand("A", 3e9), cand("B", 2e9)]
-    posted = [posted_entry(f"T{i}") for i in range(config.MAX_PER_DAY - 1)]
-    got = select.pick(cands, posted, TODAY)   # only 1 slot left today
-    assert [c.ticker for c in got] == ["A"]
-    posted.append(posted_entry("T-last"))     # cap reached
-    assert select.pick(cands, posted, TODAY) == []
+def test_slot_count_bounded_by_both_caps():
+    assert select.slot_count([], TODAY) == config.MAX_PER_TICK
+    almost = [posted_entry(f"T{i}") for i in range(config.MAX_PER_DAY - 1)]
+    assert select.slot_count(almost, TODAY) == 1
+    full = [posted_entry(f"T{i}") for i in range(config.MAX_PER_DAY)]
+    assert select.slot_count(full, TODAY) == 0
+    over = [posted_entry(f"T{i}") for i in range(config.MAX_PER_DAY + 5)]
+    assert select.slot_count(over, TODAY) == 0        # never negative
