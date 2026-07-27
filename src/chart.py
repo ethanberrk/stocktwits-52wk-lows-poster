@@ -83,10 +83,6 @@ def _render_png(candidate: Candidate, hist: list[list]) -> bytes:
     fig.patch.set_facecolor("white")
     ax.set_facecolor("white")
     fig.subplots_adjust(left=0.012, right=0.925, top=0.90, bottom=0.075)
-    # Both axes get explicit limits below (set_xlim/set_ylim); turn autoscale
-    # off up front so the month-boundary axvline() calls below don't trigger
-    # an intermediate implicit autoscale recompute before our explicit calls.
-    ax.set_autoscale_on(False)
 
     n = len(hist)
     body_w = 0.7  # in index units; thin at 1Y density

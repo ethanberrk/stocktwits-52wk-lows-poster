@@ -188,7 +188,7 @@ def test_stale_quote_is_not_appended_as_todays_candle(monkeypatch):
         raise AssertionError(f"unexpected url {url}")
 
     monkeypatch.setattr(chart, "get_json", fake_get_json)
-    with pytest.raises(chart.ChartError, match="stale"):
+    with pytest.raises(chart.ChartError, match="td='2026-07-24'"):
         chart._fetch_history("TAP-A", today=date(2026, 7, 27))
 
 
@@ -214,17 +214,14 @@ def test_y_axis_floor_never_goes_negative(monkeypatch):
     captured = {}
     real_subplots = chart.plt.subplots
 
-    def spy_subplots(*a, **kw):
+    def capture_subplots(*a, **kw):
         fig, ax = real_subplots(*a, **kw)
-        real_set_ylim = ax.set_ylim
-        def spy_set_ylim(lo, hi):
-            captured["ylim"] = (lo, hi)
-            return real_set_ylim(lo, hi)
-        ax.set_ylim = spy_set_ylim
+        captured["ax"] = ax
         return fig, ax
 
-    monkeypatch.setattr(chart.plt, "subplots", spy_subplots)
+    monkeypatch.setattr(chart.plt, "subplots", capture_subplots)
     rows = [[f"2026-01-{d:02d}", 100.0, 101.0, 99.0, 100.0] for d in range(1, 10)]
     rows += [[f"2026-02-{d:02d}", 1.0, 1.1, 0.4, 0.5] for d in range(1, 10)]
     chart._render_png(_c(), rows)
-    assert captured["ylim"][0] >= 0.0, f"y-axis floor {captured['ylim'][0]} < 0"
+    lo = captured["ax"].get_ylim()[0]
+    assert lo >= 0.0, f"y-axis floor {lo} < 0"
