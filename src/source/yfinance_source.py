@@ -20,7 +20,7 @@ def _row_to_candidate(row: dict, today: date) -> Candidate | None:
     # Preferreds and warrants inherit the parent's name AND market cap, so
     # neither NAME_EXCLUDE_RE nor the mcap floor stops them. Symbol shape does.
     symbol = row["symbol"]
-    if config.PREFERRED_RE.search(symbol) or config.WARRANT_RE.match(symbol):
+    if config.PREFERRED_RE.search(symbol) or config.WARRANT_RE.search(symbol):
         return None
     name = row.get("longName") or row.get("shortName") or ""
     if not name or config.NAME_EXCLUDE_RE.search(name):

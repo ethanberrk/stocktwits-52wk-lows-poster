@@ -60,5 +60,23 @@ def test_instrument_hygiene_constants():
     assert config.MIN_DOLLAR_VOLUME == 5_000_000
     assert config.PREFERRED_RE.search("WFC-PC")
     assert not config.PREFERRED_RE.search("BRK-B")
-    assert config.WARRANT_RE.match("DJTWW")
-    assert not config.WARRANT_RE.match("GOOGL")
+    assert config.WARRANT_RE.search("DJTWW")
+    assert not config.WARRANT_RE.search("GOOGL")
+
+def test_warrant_regex_covers_dash_suffixed_forms():
+    # NASDAQ's 5-letter convention (DJTWW) leaves NYSE/AMEX dash symbology
+    # (XYZ-WT, XYZ-UN, XYZ-RT) uncaught: same instrument, different
+    # exchange's ticker shape. A heavily traded warrant on a large fallen
+    # parent inherits the parent's longName and market cap and clears the
+    # $5M dollar-volume floor.
+    for sym in ("XYZ-W", "XYZ-WT", "XYZ-R", "XYZ-RT", "XYZ-U", "XYZ-UN"):
+        assert config.WARRANT_RE.search(sym), sym
+
+def test_warrant_regex_spares_real_dual_class_lines():
+    # Every real survivor from the live verification, both the 5-letter
+    # NASDAQ form and the dash-suffixed NYSE/AMEX form.
+    survivors = ["AGM-A", "AKO-A", "AKO-B", "BF-A", "BF-B", "BH-A", "BRK-A",
+                 "BRK-B", "CIG-C", "GEF-B", "HEI-A", "LEN-B", "MKC-V",
+                 "MOG-A", "MOG-B", "PBR-A", "TAP-A", "UHAL-B"]
+    for sym in survivors:
+        assert not config.WARRANT_RE.search(sym), sym

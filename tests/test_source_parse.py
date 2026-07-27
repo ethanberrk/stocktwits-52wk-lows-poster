@@ -83,16 +83,35 @@ def test_preferred_shares_dropped():
         assert _row_to_candidate(row(symbol=sym), TODAY) is None, sym
 
 def test_dual_class_common_survives():
-    # real share classes, not preferreds — these must still post
-    for sym in ("BRK-B", "PBR-A", "HEI-A", "LEN-B", "UHAL-B", "MOG-A", "BF-B"):
+    # real share classes, not preferreds — these must still post. Full list
+    # from the live verification (2026-07-27), both NASDAQ 5-letter names
+    # and NYSE/AMEX dash-suffixed names.
+    for sym in ("AGM-A", "AKO-A", "AKO-B", "BF-A", "BF-B", "BH-A", "BRK-A",
+                "BRK-B", "CIG-C", "GEF-B", "HEI-A", "LEN-B", "MKC-V",
+                "MOG-A", "MOG-B", "PBR-A", "TAP-A", "UHAL-B"):
         assert _row_to_candidate(row(symbol=sym), TODAY) is not None, sym
 
 def test_warrants_rights_and_units_dropped():
+    # NASDAQ's 5-letter convention
     for sym in ("DJTWW", "ABCDR", "ABCDU"):
         assert _row_to_candidate(row(symbol=sym), TODAY) is None, sym
 
+def test_dash_suffixed_warrants_rights_and_units_dropped():
+    # NYSE/AMEX symbology for the same three instrument types. These inherit
+    # the parent common's longName and market cap exactly like a preferred
+    # does, so a heavily traded warrant on a large fallen parent would
+    # otherwise clear the $5M dollar-volume floor and post.
+    for sym in ("XYZ-W", "XYZ-WT", "XYZ-R", "XYZ-RT", "XYZ-U", "XYZ-UN"):
+        assert _row_to_candidate(row(symbol=sym), TODAY) is None, sym
+
 def test_four_letter_and_ordinary_five_letter_tickers_survive():
-    # the warrant rule is 5 chars ending W/R/U — must not eat normal tickers
+    # the warrant rule is 5 chars ending W/R/U — must not eat normal tickers.
+    # NOTE: none of these end in W, R or U -- GOOGL ends in L and proves
+    # nothing about that specific boundary. A real 5-letter common stock
+    # ending in W/R/U was not found; see the report for why that's expected
+    # (those letters are NASDAQ's own reserved suffix codes for warrants,
+    # rights and units, so a common line landing on one would be a genuine
+    # symbology collision, not a normal ticker).
     for sym in ("AAPL", "GOOGL", "SIRI", "INTC"):
         assert _row_to_candidate(row(symbol=sym), TODAY) is not None, sym
 

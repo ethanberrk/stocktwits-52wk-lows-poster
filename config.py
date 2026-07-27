@@ -40,7 +40,14 @@ NAME_EXCLUDE_RE = re.compile(
 # 106 rows with zero false positives, WARRANT_RE caught exactly DJTWW, and all
 # 18 legitimate dual-class lines (BRK-B, PBR-A, HEI-A, MOG-A, ...) survived.
 PREFERRED_RE = re.compile(r"-P[A-Z]?$")          # WFC-PC, ALL-PH, KEY-PK
-WARRANT_RE = re.compile(r"^[A-Z]{4}(W|R|U)$")    # DJTWW; also rights, units
+# Two symbologies for the same three instrument types (warrant/right/unit):
+# NASDAQ's 5-letter convention (DJTWW) and NYSE/AMEX's dash suffix
+# (XYZ-WT, XYZ-RT, XYZ-UN). Only the first was covered until 2026-07-27 --
+# the dash form inherits the parent's longName and market cap just like a
+# preferred does, and clears the dollar-volume floor on a heavily traded
+# parent. Real dual-class lines (BRK-B, PBR-A, MKC-V, ...) never end in a
+# bare -W/-R/-U/-WT/-RT/-UN, so neither branch below touches them.
+WARRANT_RE = re.compile(r"^[A-Z]{4}(W|R|U)$|-(WT|RT|UN|W|R|U)$")
 
 # A line parked at its 52-week low on a hundred shares a day re-qualifies
 # every session and the 2-day cooldown returns it indefinitely (TAP-A,
