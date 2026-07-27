@@ -7,10 +7,17 @@ def test_caps_and_floors():
     assert config.MIN_MARKET_CAP == 1_000_000_000
     assert config.MAX_PER_TICK == 2
     assert config.MAX_PER_DAY == 20
-    assert config.MAX_PLAUSIBLE_HIGHS == 500
+    assert config.MAX_PLAUSIBLE_LOWS == 1200
     assert config.MARKET_TZ == "America/New_York"
     assert config.MARKET_OPEN == (9, 30)
     assert config.MARKET_CLOSE == (16, 0)
+
+def test_plausibility_gate_is_sized_for_lows():
+    # Lows run far higher than highs on a selloff; 500 would halt the feed on
+    # its best content days. 1200 is ~43% of the 2,766-row universe:
+    # unreachable by real breadth, tripped by a filter that stopped filtering.
+    assert config.MAX_PLAUSIBLE_LOWS == 1200
+    assert not hasattr(config, "MAX_PLAUSIBLE_HIGHS")
 
 def test_name_exclusion_regex():
     bad = ["SPDR S&P 500 ETF", "Global Fund", "Acme Pfd Series A",

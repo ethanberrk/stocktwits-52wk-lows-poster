@@ -17,4 +17,4 @@ def compose_post_text(c: Candidate) -> str:
     # No price/%chg/mcap in the copy: those numbers go stale between the
     # tick and the reader; the attached chart carries the quantitative story.
     # Cashtag uses Stocktwits symbology (BRK.B, not Yahoo's BRK-B).
-    return f"${st_symbol(c.ticker)} printed a new 52-week high today"
+    return f"${st_symbol(c.ticker)} printed a new 52-week low today"

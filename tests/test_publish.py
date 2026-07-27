@@ -12,16 +12,24 @@ from src.publish.stocktwits_pub import StocktwitsPublisher, PublishError
 CAND = Candidate("AAPL", "Apple Inc.", "NASDAQ", 251.37, 1.84,
                  3.91e12, 252.0, "EQUITY")
 
-def test_compose_is_cashtag_plus_fixed_phrase():
-    # Deliberately no price/%chg/mcap: they'd be stale by read time.
-    assert compose_post_text(CAND) == "$AAPL printed a new 52-week high today"
+def test_copy_is_the_locked_lows_line():
+    c = Candidate("RIVN", "Rivian Automotive, Inc.", "NASDAQ", 9.12, -4.1,
+                  1.1e10, 9.05, "EQUITY")
+    assert compose_post_text(c) == "$RIVN printed a new 52-week low today"
 
-def test_compose_uses_stocktwits_cashtag_format_for_share_classes():
-    # Yahoo says BRK-B; the Stocktwits cashtag is $BRK.B — a $BRK-B post
-    # would never land in the ticker's stream
-    c = Candidate("BRK-B", "Berkshire Hathaway", "NYSE", 500.0, 1.0,
-                  1.1e12, 501.0, "EQUITY")
-    assert compose_post_text(c) == "$BRK.B printed a new 52-week high today"
+def test_copy_has_no_stale_numbers():
+    c = Candidate("RIVN", "Rivian Automotive, Inc.", "NASDAQ", 9.12, -4.1,
+                  1.1e10, 9.05, "EQUITY")
+    text = compose_post_text(c)
+    for stale in ("9.12", "4.1", "1.1", "Rivian"):
+        assert stale not in text, f"{stale!r} goes stale between tick and reader"
+
+def test_copy_uses_stocktwits_cashtag_symbology():
+    # Yahoo spells share classes with a dash; a dash cashtag never lands in
+    # the ticker's Stocktwits stream
+    c = Candidate("BRK-B", "Berkshire Hathaway Inc.", "NYSE", 400.0, -1.0,
+                  1e12, 399.0, "EQUITY")
+    assert compose_post_text(c) == "$BRK.B printed a new 52-week low today"
 
 def test_dryrun_writes_png_and_txt(tmp_path):
     pub = DryRunPublisher(tmp_path, date(2026, 7, 1))
@@ -33,11 +41,11 @@ def test_dryrun_writes_png_and_txt(tmp_path):
 
 def test_write_post_artifacts_creates_png_and_txt(tmp_path):
     write_post_artifacts(tmp_path, date(2026, 7, 8), "AAPL",
-                         "$AAPL printed a new 52-week high today", b"\x89PNGdata")
+                         "$AAPL printed a new 52-week low today", b"\x89PNGdata")
     day = tmp_path / "2026-07-08"
     assert (day / "AAPL.png").read_bytes() == b"\x89PNGdata"
     assert (day / "AAPL.txt").read_text(encoding="utf-8") == \
-        "$AAPL printed a new 52-week high today"
+        "$AAPL printed a new 52-week low today"
 
 
 class _FakeResp:
@@ -65,11 +73,11 @@ def test_stocktwits_post_sends_multipart_and_returns_id(tmp_path):
         return _FakeResp(json.dumps(
             {"response": {"status": 200}, "message": {"id": 98765}}).encode())
     res = _pub(tmp_path, fake_urlopen).post(
-        CAND, "$AAPL printed a new 52-week high today", b"\x89PNGdata")
+        CAND, "$AAPL printed a new 52-week low today", b"\x89PNGdata")
     assert res == PostResult(post_id="98765", dry_run=False)
     body = captured["data"]
     assert b'name="access_token"' in body and b"TOKEN123" in body
-    assert b'name="body"' in body and b"printed a new 52-week high" in body
+    assert b'name="body"' in body and b"printed a new 52-week low" in body
     assert b'name="chart"; filename=' in body and b"\x89PNGdata" in body
     ct = captured["headers"]["content-type"]
     assert ct.startswith("multipart/form-data; boundary=")
@@ -80,7 +88,7 @@ def test_stocktwits_post_writes_output_artifacts_on_success(tmp_path):
         return _FakeResp(json.dumps(
             {"response": {"status": 200}, "message": {"id": 1}}).encode())
     _pub(tmp_path, fake_urlopen).post(
-        CAND, "$AAPL printed a new 52-week high today", b"\x89PNGdata")
+        CAND, "$AAPL printed a new 52-week low today", b"\x89PNGdata")
     day = tmp_path / "2026-07-08"
     assert (day / "AAPL.png").read_bytes() == b"\x89PNGdata"
     assert (day / "AAPL.txt").read_text(encoding="utf-8").startswith("$AAPL")

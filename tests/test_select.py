@@ -14,7 +14,7 @@ def posted_entry(ticker, d=TODAY):
     return {"ticker": ticker, "date": d.isoformat(), "post_id": None}
 
 def test_validate_rejects_implausible_count():
-    cands = [cand(f"T{i}", 2e9) for i in range(config.MAX_PLAUSIBLE_HIGHS + 1)]
+    cands = [cand(f"T{i}", 2e9) for i in range(config.MAX_PLAUSIBLE_LOWS + 1)]
     with pytest.raises(select.ValidationError):
         select.validate(cands)
     select.validate(cands[:10])  # plausible: no raise
