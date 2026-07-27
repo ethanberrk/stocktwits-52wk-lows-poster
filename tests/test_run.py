@@ -166,6 +166,45 @@ def test_skipped_name_is_not_recorded_and_stays_eligible(tmp_path):
     # no state entry for SPCX at all -> nothing blocks it on a later tick
     assert "SPCX" not in [e["ticker"] for e in state.load_posted(sp)]
 
+class _FakeCompleted:
+    def __init__(self, returncode=0, stdout=""):
+        self.returncode = returncode
+        self.stdout = stdout
+
+def test_git_sync_state_skips_push_on_feature_branch_ref(monkeypatch):
+    # GITHUB_REF is what a real Actions dispatch on a feature branch sets --
+    # must never touch git at all, let alone push to main.
+    calls = []
+    monkeypatch.setattr(run.subprocess, "run",
+                        lambda *a, **k: (calls.append(a[0]), _FakeCompleted())[1])
+    monkeypatch.setenv("GITHUB_REF", "refs/heads/feat/lows-poster")
+    run._git_sync_state()
+    assert calls == []
+
+def test_git_sync_state_falls_back_to_local_branch_when_ref_unset(monkeypatch):
+    # Local runs have no GITHUB_REF; fall back to the checked-out branch.
+    calls = []
+    def fake_run(cmd, **kw):
+        calls.append(cmd)
+        return _FakeCompleted(stdout="some-feature-branch\n")
+    monkeypatch.setattr(run.subprocess, "run", fake_run)
+    monkeypatch.delenv("GITHUB_REF", raising=False)
+    run._git_sync_state()
+    assert calls == [["git", "rev-parse", "--abbrev-ref", "HEAD"]]
+
+def test_git_sync_state_proceeds_when_ref_is_main(monkeypatch):
+    calls = []
+    def fake_run(cmd, **kw):
+        calls.append(cmd)
+        if cmd[-1] == "--quiet":
+            return _FakeCompleted(returncode=1)   # pretend something is staged
+        return _FakeCompleted()
+    monkeypatch.setattr(run.subprocess, "run", fake_run)
+    monkeypatch.setenv("GITHUB_REF", "refs/heads/main")
+    run._git_sync_state()
+    push_calls = [c for c in calls if "push" in c]
+    assert push_calls == [["git", "push", "origin", "HEAD:main"]]
+
 def test_tick_stops_after_max_candidate_attempts(tmp_path, monkeypatch):
     """Bound the walk: a degraded chart source must not run the tick past
     the workflow timeout, which would silently queue and drop later ticks."""

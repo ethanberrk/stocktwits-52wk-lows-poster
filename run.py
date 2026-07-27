@@ -82,7 +82,23 @@ def tick(source: LowsSource, publisher: Publisher, chart_fetch,
 
 def _git_sync_state() -> None:
     """Commit and push pending intents before posting. Any failure raises,
-    aborting the tick BEFORE anything is posted — the safe side."""
+    aborting the tick BEFORE anything is posted — the safe side.
+
+    Branch guard: a manual dispatch on a feature branch must never push
+    pending state to main. GITHUB_REF is authoritative in CI; a local run
+    (where it's unset) falls back to the checked-out branch name. Off main,
+    this is a no-op print, not a raise — a local dry-run should proceed."""
+    ref = os.environ.get("GITHUB_REF")
+    if ref is None:
+        ref = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True, text=True, check=True).stdout.strip()
+        on_main = ref == "main"
+    else:
+        on_main = ref == "refs/heads/main"
+    if not on_main:
+        print(f"not on main (ref={ref!r}); skipping state-sync push")
+        return
     git = ["git", "-c", "user.name=52wk-lows-bot",
            "-c", "user.email=actions@users.noreply.github.com"]
     subprocess.run(git + ["add", "state"], check=True)
