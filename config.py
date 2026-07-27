@@ -60,6 +60,13 @@ MIN_DOLLAR_VOLUME = 5_000_000
 # it: 2,766 rows down to a true $1.001B floor, no truncation.
 SCREEN_EXCHANGES = ("NMS", "NYQ", "NGM", "NCM", "ASE")
 
+# Runtime tripwire, not a filter: a working exchange filter reaches down to
+# ~$1.0B. If yfinance ever turns "is-in" into a no-op, the screen silently
+# reverts to 3,000 truncated rows and a ~$6.6B effective floor -- fewer,
+# larger names, no alarm otherwise. _screen_rows prints (does not raise) when
+# the screened minimum market cap exceeds this.
+SCREEN_TRUNCATION_WARN_CAP = 2_000_000_000
+
 # Bound the walk-down. Per candidate the Stocktwits symbol check allows 15s
 # and each get_json retries 4x at 12s, so an unbounded walk over a selloff-day
 # lows list can outrun the workflow timeout — and because tick.yml uses

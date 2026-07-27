@@ -63,3 +63,22 @@ def test_screen_query_filters_by_exchange(monkeypatch):
     yfinance_source.YFinanceSource()._screen_rows()
     for code in config.SCREEN_EXCHANGES:
         assert code in seen["query"], f"{code} missing from screen query"
+
+def test_screen_warns_when_truncated(monkeypatch, capsys):
+    # If the exchange filter ever silently stops filtering, the screen
+    # reverts to ~$6.6B truncated rows with no other signal -- this is the
+    # only alarm. Fixture's minimum cap sits above the $2B tripwire.
+    rows = [{"marketCap": 6_600_000_000}, {"marketCap": 3_000_000_000}]
+    src = YFinanceSource()
+    monkeypatch.setattr(yfinance_source.yf, "screen",
+                        lambda *a, **k: {"quotes": rows})
+    src._screen_rows()
+    assert "WARNING" in capsys.readouterr().out
+
+def test_screen_stays_quiet_when_floor_is_real(monkeypatch, capsys):
+    rows = [{"marketCap": 1_001_000_000}, {"marketCap": 3_000_000_000}]
+    src = YFinanceSource()
+    monkeypatch.setattr(yfinance_source.yf, "screen",
+                        lambda *a, **k: {"quotes": rows})
+    src._screen_rows()
+    assert "WARNING" not in capsys.readouterr().out

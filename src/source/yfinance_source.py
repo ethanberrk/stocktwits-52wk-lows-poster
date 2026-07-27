@@ -79,6 +79,12 @@ class YFinanceSource(LowsSource):
             if len(quotes) < _PAGE:
                 break
             offset += _PAGE
+        caps = [r["marketCap"] for r in rows if r.get("marketCap") is not None]
+        if caps and min(caps) > config.SCREEN_TRUNCATION_WARN_CAP:
+            print(f"WARNING: screened rows' minimum market cap is "
+                  f"${min(caps):,.0f}, above the ${config.SCREEN_TRUNCATION_WARN_CAP:,.0f} "
+                  "tripwire (a working exchange filter reaches ~$1.0B) -- the "
+                  "screen may be truncated to fewer, larger names")
         return rows
 
     def fetch_candidates(self) -> list:
