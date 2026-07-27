@@ -48,3 +48,10 @@ def test_chart_source_config():
     assert (config.CHART_WIDTH, config.CHART_HEIGHT) == (800, 450)
     # chart-img is gone entirely
     assert not hasattr(config, "CHART_IMG_URL")
+
+def test_instrument_hygiene_constants():
+    assert config.MIN_DOLLAR_VOLUME == 5_000_000
+    assert config.PREFERRED_RE.search("WFC-PC")
+    assert not config.PREFERRED_RE.search("BRK-B")
+    assert config.WARRANT_RE.match("DJTWW")
+    assert not config.WARRANT_RE.match("GOOGL")

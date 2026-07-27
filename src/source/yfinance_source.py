@@ -9,12 +9,18 @@ import yfinance as yf
 _EXCHANGES = {"NMS": "NASDAQ", "NGM": "NASDAQ", "NCM": "NASDAQ",
               "NYQ": "NYSE", "ASE": "AMEX"}
 _REQUIRED = ("symbol", "regularMarketPrice", "regularMarketDayLow",
-             "fiftyTwoWeekLow", "marketCap", "regularMarketTime")
+             "fiftyTwoWeekLow", "marketCap", "regularMarketTime",
+             "regularMarketVolume")
 
 def _row_to_candidate(row: dict, today: date) -> Candidate | None:
     if any(row.get(k) is None for k in _REQUIRED):
         return None
     if row.get("quoteType") != "EQUITY":
+        return None
+    # Preferreds and warrants inherit the parent's name AND market cap, so
+    # neither NAME_EXCLUDE_RE nor the mcap floor stops them. Symbol shape does.
+    symbol = row["symbol"]
+    if config.PREFERRED_RE.search(symbol) or config.WARRANT_RE.match(symbol):
         return None
     name = row.get("longName") or row.get("shortName") or ""
     if not name or config.NAME_EXCLUDE_RE.search(name):
@@ -23,6 +29,11 @@ def _row_to_candidate(row: dict, today: date) -> Candidate | None:
     # not the "US stocks at new lows" our audience means, and there's no
     # exchange prefix to resolve for the chart legend anyway.
     if row.get("exchange") not in _EXCHANGES:
+        return None
+    # Liquidity floor: a flat print on a hundred shares is not a new low
+    # anyone traded. Dollar volume, not share count.
+    if (float(row["regularMarketPrice"]) * float(row["regularMarketVolume"])
+            < config.MIN_DOLLAR_VOLUME):
         return None
     # Freshness gate: the quote must have traded TODAY (ET). On market
     # holidays every quote still carries the previous session's timestamp,

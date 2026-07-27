@@ -11,7 +11,8 @@ def good_row(sym, day_low, wk_low, ts=None):
             "quoteType": "EQUITY", "regularMarketPrice": day_low + 1,
             "regularMarketChangePercent": -1.0, "regularMarketDayLow": day_low,
             "fiftyTwoWeekLow": wk_low, "marketCap": 5e9,
-            "regularMarketTime": ts if ts is not None else int(time.time())}
+            "regularMarketTime": ts if ts is not None else int(time.time()),
+            "regularMarketVolume": 1_000_000}
 
 def test_fetch_filters_to_new_lows(monkeypatch):
     src = YFinanceSource()

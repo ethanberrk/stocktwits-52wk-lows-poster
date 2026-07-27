@@ -31,3 +31,18 @@ NAME_EXCLUDE_RE = re.compile(
     r"|Acquisition Corp",
     re.I,
 )
+
+# Instrument hygiene. Yahoo hands preferred shares and warrants the PARENT
+# common's longName (so NAME_EXCLUDE_RE never fires) and the parent's market
+# cap (so they rank at the top of a size-ranked feed). Invisible on the high
+# side; pervasive on the low side, where these lines sit near their lows
+# structurally and barely trade. Verified live 2026-07-27: PREFERRED_RE caught
+# 106 rows with zero false positives, WARRANT_RE caught exactly DJTWW, and all
+# 18 legitimate dual-class lines (BRK-B, PBR-A, HEI-A, MOG-A, ...) survived.
+PREFERRED_RE = re.compile(r"-P[A-Z]?$")          # WFC-PC, ALL-PH, KEY-PK
+WARRANT_RE = re.compile(r"^[A-Z]{4}(W|R|U)$")    # DJTWW; also rights, units
+
+# A line parked at its 52-week low on a hundred shares a day re-qualifies
+# every session and the 2-day cooldown returns it indefinitely (TAP-A,
+# 116 shares, 2026-07-27). Dollar volume, so it scales across price levels.
+MIN_DOLLAR_VOLUME = 5_000_000
