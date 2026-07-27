@@ -34,6 +34,22 @@ def test_ranked_eligible_respects_cooldown():
     posted = [posted_entry("A", date(2026, 6, 30))]  # posted Tuesday -> blocked Wed
     assert [c.ticker for c in select.ranked_eligible(cands, posted, TODAY)] == ["B"]
 
+def test_ranked_eligible_dedupes_by_ticker_keeping_first_occurrence():
+    # yfinance_source pages the screen by offset over a list Yahoo sorts by
+    # INTRADAY market cap, so a name on a page boundary can drift one rank
+    # between requests and come back twice with slightly different market
+    # caps. Both copies would otherwise chart and post -> two undeletable
+    # duplicate Stocktwits posts. Dedup must happen BEFORE the sort, keeping
+    # whichever occurrence appeared first in the source order.
+    first_seen = cand("XYZ", 5e9)
+    second_seen = cand("XYZ", 6e9)   # different mcap: proves which copy wins
+    cands = [first_seen, second_seen, cand("OTHER", 4e9)]
+    got = select.ranked_eligible(cands, [], TODAY)
+    tickers = [c.ticker for c in got]
+    assert tickers.count("XYZ") == 1
+    xyz = next(c for c in got if c.ticker == "XYZ")
+    assert xyz.market_cap == 5e9   # the FIRST occurrence survived, not the larger one
+
 def test_slot_count_bounded_by_both_caps():
     assert select.slot_count([], TODAY) == config.MAX_PER_TICK
     almost = [posted_entry(f"T{i}") for i in range(config.MAX_PER_DAY - 1)]
