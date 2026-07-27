@@ -46,3 +46,9 @@ WARRANT_RE = re.compile(r"^[A-Z]{4}(W|R|U)$")    # DJTWW; also rights, units
 # every session and the 2-day cooldown returns it indefinitely (TAP-A,
 # 116 shares, 2026-07-27). Dollar volume, so it scales across price levels.
 MIN_DOLLAR_VOLUME = 5_000_000
+
+# Ask Yahoo for listed exchanges only. Without this the screen's 3000-row page
+# cap is consumed by ~1,700 pink-sheet rows the exchange check discards later,
+# truncating the real market-cap floor to ~$6.6B (measured 2026-07-27). With
+# it: 2,766 rows down to a true $1.001B floor, no truncation.
+SCREEN_EXCHANGES = ("NMS", "NYQ", "NGM", "NCM", "ASE")

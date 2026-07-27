@@ -68,6 +68,7 @@ class YFinanceSource(LowsSource):
         q = yf.EquityQuery("and", [
             yf.EquityQuery("eq", ["region", "us"]),
             yf.EquityQuery("gt", ["intradaymarketcap", config.MIN_MARKET_CAP]),
+            yf.EquityQuery("is-in", ["exchange", *config.SCREEN_EXCHANGES]),
         ])
         rows, offset = [], 0
         while offset < _MAX_OFFSET:

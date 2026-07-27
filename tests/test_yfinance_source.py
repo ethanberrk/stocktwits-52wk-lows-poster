@@ -1,6 +1,8 @@
 import time
 
 import pytest
+import config
+from src.source import yfinance_source
 from src.source.base import SourceError
 from src.source.yfinance_source import YFinanceSource
 
@@ -41,3 +43,23 @@ def test_holiday_all_quotes_stale_yields_no_candidates(monkeypatch):
     monkeypatch.setattr(src, "_screen_rows",
                         lambda: [good_row("LO", 90.0, 90.0, ts=stale)])
     assert src.fetch_candidates() == []
+
+def test_screen_query_filters_by_exchange(monkeypatch):
+    """The screen must ask Yahoo for listed exchanges only.
+
+    Without this the 3000-row page cap is consumed by ~1,700 pink sheets that
+    the exchange check discards anyway, and the effective market-cap floor
+    lands at ~$6.6B instead of the $1B config.MIN_MARKET_CAP claims.
+    """
+    seen = {}
+
+    def fake_screen(q, offset=0, size=250, **kw):
+        # EquityQuery.to_dict() exists in yfinance >= 0.2.50 and expands an
+        # is-in into nested EQ operands; stringifying is enough to assert on.
+        seen["query"] = str(q.to_dict())
+        return {"quotes": []}
+
+    monkeypatch.setattr(yfinance_source.yf, "screen", fake_screen)
+    yfinance_source.YFinanceSource()._screen_rows()
+    for code in config.SCREEN_EXCHANGES:
+        assert code in seen["query"], f"{code} missing from screen query"
