@@ -3,7 +3,7 @@ import os
 import pytest
 import run
 from src.chart import ChartError
-from src.source.base import Candidate, HighsSource
+from src.source.base import Candidate, LowsSource
 from src.publish.base import Publisher, PostResult
 from src.publish.dryrun import DryRunPublisher
 from src.publish.stocktwits_pub import StocktwitsPublisher, PublishError
@@ -13,9 +13,9 @@ NOW = datetime(2026, 7, 1, 14, 0, tzinfo=timezone.utc)  # Wed 10:00 ET, market o
 TODAY = date(2026, 7, 1)
 
 def cand(ticker, mcap=5e9):
-    return Candidate(ticker, f"{ticker} Inc", "NYSE", 100.0, 2.0, mcap, 101.0, "EQUITY")
+    return Candidate(ticker, f"{ticker} Inc", "NYSE", 100.0, 2.0, mcap, 99.0, "EQUITY")
 
-class FakeSource(HighsSource):
+class FakeSource(LowsSource):
     def __init__(self, cands): self.cands = cands
     def fetch_candidates(self): return self.cands
 

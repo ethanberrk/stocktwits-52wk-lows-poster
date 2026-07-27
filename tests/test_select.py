@@ -8,7 +8,7 @@ TODAY = date(2026, 7, 1)  # Wednesday
 
 def cand(ticker, mcap):
     return Candidate(ticker, f"{ticker} Inc", "NYSE", 100.0, 2.0,
-                     mcap, 101.0, "EQUITY")
+                     mcap, 99.0, "EQUITY")
 
 def posted_entry(ticker, d=TODAY):
     return {"ticker": ticker, "date": d.isoformat(), "post_id": None}

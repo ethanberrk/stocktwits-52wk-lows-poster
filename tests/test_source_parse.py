@@ -14,24 +14,34 @@ def row(**over):
     base = {
         "symbol": "AAPL", "shortName": "Apple Inc.", "exchange": "NMS",
         "quoteType": "EQUITY", "regularMarketPrice": 250.0,
-        "regularMarketChangePercent": 1.8, "regularMarketDayHigh": 252.0,
-        "fiftyTwoWeekHigh": 252.0, "marketCap": 3.9e12,
+        "regularMarketChangePercent": -1.8, "regularMarketDayLow": 248.0,
+        "fiftyTwoWeekLow": 248.0, "marketCap": 3.9e12,
         "regularMarketTime": TS_TODAY,
     }
     base.update(over)
     return base
 
-def test_new_high_row_parses():
+def test_new_low_row_parses():
     c = _row_to_candidate(row(), TODAY)
-    assert c == Candidate("AAPL", "Apple Inc.", "NASDAQ", 250.0, 1.8,
-                          3.9e12, 252.0, "EQUITY")
+    assert c == Candidate("AAPL", "Apple Inc.", "NASDAQ", 250.0, -1.8,
+                          3.9e12, 248.0, "EQUITY")
 
-def test_not_at_high_is_dropped():
-    assert _row_to_candidate(row(regularMarketDayHigh=240.0), TODAY) is None
+def test_not_at_low_is_dropped():
+    # day low sits above the 52-week low: no new low today
+    assert _row_to_candidate(row(regularMarketDayLow=260.0), TODAY) is None
 
-def test_day_cumulative_high_kept_even_after_pullback():
-    # broke out earlier today (day high == 52wk high), pulled back to 245
-    assert _row_to_candidate(row(regularMarketPrice=245.0), TODAY) is not None
+def test_day_cumulative_low_kept_even_after_bounce():
+    # broke down earlier today (day low == 52wk low), rallied back to 255
+    assert _row_to_candidate(row(regularMarketPrice=255.0), TODAY) is not None
+
+def test_boundary_equality_counts_as_a_new_low():
+    # Yahoo's fiftyTwoWeekLow includes today, so exact equality IS the signal
+    assert _row_to_candidate(
+        row(regularMarketDayLow=248.0, fiftyTwoWeekLow=248.0), TODAY) is not None
+
+def test_float_noise_within_epsilon_still_counts():
+    assert _row_to_candidate(
+        row(regularMarketDayLow=248.0000001, fiftyTwoWeekLow=248.0), TODAY) is not None
 
 def test_stale_quote_dropped_market_holiday():
     # holiday scenario: gate passes (weekday) but the quote last traded
@@ -51,7 +61,7 @@ def test_excluded_name_dropped():
 
 def test_missing_field_dropped():
     assert _row_to_candidate(row(marketCap=None), TODAY) is None
-    r = row(); del r["fiftyTwoWeekHigh"]
+    r = row(); del r["fiftyTwoWeekLow"]
     assert _row_to_candidate(r, TODAY) is None
 
 def test_exchange_mapping():
@@ -60,7 +70,7 @@ def test_exchange_mapping():
     assert _row_to_candidate(row(exchange="NMS"), TODAY).exchange == "NASDAQ"
 
 def test_otc_and_unknown_exchanges_dropped():
-    # pink sheets / OTC markets are not "US stocks at 52wk highs" for our
-    # audience, and chart-img can't resolve them without an exchange prefix
+    # pink sheets / OTC markets are not "US stocks at 52wk lows" for our
+    # audience, and they have no exchange prefix for the chart legend
     for code in ("PNK", "OQX", "OID", "???", None):
         assert _row_to_candidate(row(exchange=code), TODAY) is None

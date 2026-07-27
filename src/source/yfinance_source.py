@@ -2,14 +2,14 @@ from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
 import config
-from src.source.base import Candidate, HighsSource, SourceError
+from src.source.base import Candidate, LowsSource, SourceError
 import yfinance as yf
 
 # Yahoo exchange codes -> TradingView prefixes chart-img understands
 _EXCHANGES = {"NMS": "NASDAQ", "NGM": "NASDAQ", "NCM": "NASDAQ",
               "NYQ": "NYSE", "ASE": "AMEX"}
-_REQUIRED = ("symbol", "regularMarketPrice", "regularMarketDayHigh",
-             "fiftyTwoWeekHigh", "marketCap", "regularMarketTime")
+_REQUIRED = ("symbol", "regularMarketPrice", "regularMarketDayLow",
+             "fiftyTwoWeekLow", "marketCap", "regularMarketTime")
 
 def _row_to_candidate(row: dict, today: date) -> Candidate | None:
     if any(row.get(k) is None for k in _REQUIRED):
@@ -32,9 +32,9 @@ def _row_to_candidate(row: dict, today: date) -> Candidate | None:
         row["regularMarketTime"], ZoneInfo(config.MARKET_TZ)).date()
     if traded != today:
         return None
-    # Day-cumulative 52wk-high test: today's high touched the 52wk high.
-    # Yahoo's fiftyTwoWeekHigh already includes today, so equality == new high.
-    if row["regularMarketDayHigh"] + 1e-6 < row["fiftyTwoWeekHigh"]:
+    # Day-cumulative 52wk-low test: today's low touched the 52wk low.
+    # Yahoo's fiftyTwoWeekLow already includes today, so equality == new low.
+    if row["regularMarketDayLow"] - 1e-6 > row["fiftyTwoWeekLow"]:
         return None
     return Candidate(
         ticker=row["symbol"],
@@ -43,15 +43,15 @@ def _row_to_candidate(row: dict, today: date) -> Candidate | None:
         price=float(row["regularMarketPrice"]),
         pct_change_today=float(row.get("regularMarketChangePercent") or 0.0),
         market_cap=float(row["marketCap"]),
-        week52_high=float(row["fiftyTwoWeekHigh"]),
+        week52_low=float(row["fiftyTwoWeekLow"]),
         security_type=row["quoteType"],
     )
 
 _PAGE = 250
 _MAX_OFFSET = 3000  # safety backstop; ~2-3k US names clear the $1B floor
 
-class YFinanceSource(HighsSource):
-    """Screen US equities >$1B by mcap desc, keep rows on today's 52wk-high list."""
+class YFinanceSource(LowsSource):
+    """Screen US equities >$1B by mcap desc, keep rows on today's 52wk-low list."""
 
     def _screen_rows(self) -> list[dict]:
         q = yf.EquityQuery("and", [
