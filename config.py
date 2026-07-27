@@ -74,4 +74,9 @@ SCREEN_TRUNCATION_WARN_CAP = 2_000_000_000
 # until GitHub drops them and the feed goes dark silently.
 # Counts candidates EXAMINED, not charts fetched: the symbol check runs first
 # and costs real time even when no chart is attempted.
+# NOTE: this bound alone does not keep a tick inside timeout-minutes: 15 —
+# worst case is ~20 x 110s ≈ 39 minutes. The job's timeout-minutes is the
+# real backstop that ends a stuck run; this cap exists so a degraded chart
+# source ends the tick with a clear log line well before that, rather than
+# being killed mid-walk with no explanation.
 MAX_CANDIDATE_ATTEMPTS = 20

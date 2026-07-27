@@ -33,7 +33,7 @@ day. Supply binds well before the daily cap. That is not a malfunction.
 
 ## Running it
 
-    .venv/bin/python -m pytest -q            # unit tests (83+)
+    .venv/bin/python -m pytest -q            # unit tests
     .venv/bin/python -m pytest -m contract   # live network tests
     .venv/bin/python run.py --force          # one dry-run tick, any time of day
 

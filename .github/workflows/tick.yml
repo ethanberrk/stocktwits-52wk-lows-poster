@@ -1,13 +1,18 @@
 # .github/workflows/tick.yml
 name: tick
 on:
-  # Ticks are driven solely by cron-job.org (jobId 8021029), which POSTs a
-  # workflow_dispatch on the :00/:30 slots, 13:00-21:30 UTC weekdays. run.py
-  # gates market hours precisely. GitHub's own `schedule` cron was removed
-  # 2026-07-09: it delivered ~27% of its slots at arbitrary minutes (7-56 min
-  # late), so its late fires landed in a different half-hour window than the
-  # dispatch and posted an extra ticker, compressing the 30-min trickle and
-  # exhausting the daily cap ~2 hours before the close.
+  # Ticks are driven solely by cron-job.org, which POSTs a workflow_dispatch
+  # on the :15/:45 slots, 13:00-21:45 UTC weekdays (13 in-market ticks,
+  # offset from the highs poster's :00/:30 and the weakness poster's
+  # :05/:35 so the three don't fire together). run.py gates market hours
+  # precisely. The cron-job.org job is created at Phase 1 go-live, so there
+  # is no jobId here yet.
+  #
+  # GitHub's own `schedule` cron is deliberately not used: on the sibling
+  # highs poster it delivered only ~27% of its slots on time (7-56 min
+  # late), and a late fire landing in a different half-hour window than the
+  # dispatch posted an extra ticker, compressing the 30-min trickle and
+  # exhausting the daily cap early.
   workflow_dispatch: {}
 
 permissions:

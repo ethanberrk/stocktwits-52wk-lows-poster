@@ -125,7 +125,9 @@ def check_truth(ticker: str, d: date) -> None:
     detail = (f"{ticker} {d}: day low {day_low:.2f} vs prior-252-session min "
               f"{prior_min:.2f} ({margin:+.2%})")
     # Tolerance inverts with the comparison: a permissive band ABOVE the prior
-    # minimum. (1 - TOL) here would be stricter than exact and FAIL every post.
+    # minimum. (1 - TOL) here would be stricter than exact, FAILing the
+    # exact-match and rounding cases -- a genuine new low well below the
+    # prior minimum would still pass.
     if day_low <= prior_min * (1 + TRUTH_TOLERANCE):
         level = "PASS" if len(prior) >= 200 else "WARN"
         suffix = "" if len(prior) >= 200 else f" [only {len(prior)} prior sessions]"
