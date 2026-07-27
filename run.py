@@ -1,4 +1,4 @@
-"""One tick: source -> validate -> pick -> verify symbol -> chart ->
+"""One tick: source -> validate -> rank -> walk down until one charts ->
 write-ahead intent -> publish -> confirm."""
 import argparse
 import os
@@ -83,7 +83,7 @@ def tick(source: LowsSource, publisher: Publisher, chart_fetch,
 def _git_sync_state() -> None:
     """Commit and push pending intents before posting. Any failure raises,
     aborting the tick BEFORE anything is posted — the safe side."""
-    git = ["git", "-c", "user.name=52wk-poster-bot",
+    git = ["git", "-c", "user.name=52wk-lows-bot",
            "-c", "user.email=actions@users.noreply.github.com"]
     subprocess.run(git + ["add", "state"], check=True)
     if subprocess.run(["git", "diff", "--cached", "--quiet"]).returncode == 0:

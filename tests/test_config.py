@@ -43,7 +43,7 @@ def test_caps_are_env_overridable(monkeypatch):
 def test_stocktwits_constants_present():
     assert config.STOCKTWITS_CREATE_URL == \
         "https://api.stocktwits.com/api/2/messages/create.json"
-    assert config.STOCKTWITS_USER_AGENT == "stocktwits-52wk-poster/1.0"
+    assert config.STOCKTWITS_USER_AGENT == "stocktwits-52wk-lows-poster/1.0"
 
 def test_chart_source_config():
     # keyless stockanalysis endpoints drive the self-rendered charts

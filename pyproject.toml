@@ -1,5 +1,5 @@
 [project]
-name = "stocktwits-52wk-poster"
+name = "stocktwits-52wk-lows-poster"
 version = "0.1.0"
 requires-python = ">=3.12"
 

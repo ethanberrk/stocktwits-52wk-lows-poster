@@ -23,7 +23,7 @@ CHART_HEIGHT = 450
 # public, unauthenticated; used to validate a cashtag resolves before posting
 STOCKTWITS_SYMBOL_URL = "https://api.stocktwits.com/api/2/streams/symbol/{symbol}.json"
 STOCKTWITS_CREATE_URL = "https://api.stocktwits.com/api/2/messages/create.json"
-STOCKTWITS_USER_AGENT = "stocktwits-52wk-poster/1.0"
+STOCKTWITS_USER_AGENT = "stocktwits-52wk-lows-poster/1.0"
 
 # Drop non-common-equity by name (same rule the WSJ prototype proved out)
 NAME_EXCLUDE_RE = re.compile(
