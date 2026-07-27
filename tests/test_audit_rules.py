@@ -1,11 +1,16 @@
 import importlib.util
 import sys
+from datetime import date
 from pathlib import Path
+
+import pandas as pd
+import pytest
+import yfinance
 
 ROOT = Path(__file__).resolve().parent.parent
 
 spec = importlib.util.spec_from_file_location(
-    "verify_day", Path(__file__).parent.parent / "scripts" / "verify_day.py")
+    "verify_day", ROOT / "scripts" / "verify_day.py")
 verify_day = importlib.util.module_from_spec(spec)
 sys.modules["verify_day"] = verify_day
 spec.loader.exec_module(verify_day)
@@ -41,17 +46,54 @@ def test_daily_cap_violation_fails():
     posted = [entry(f"T{i}", "2026-07-02") for i in range(21)]
     assert run_rules(posted) > 0
 
-def test_truth_check_uses_the_low_side_and_a_permissive_tolerance():
-    """The tolerance MUST invert with the comparison.
+class _FakeTicker:
+    """Stands in for yf.Ticker(ticker) -- .history() returns a fixed frame."""
+    def __init__(self, df):
+        self._df = df
 
-    Highs pass when day_high >= prior_max * (1 - TOL) — a permissive band
-    below the max. Lows pass when day_low <= prior_min * (1 + TOL) — a
-    permissive band above the min. Keeping (1 - TOL) on the low side turns
-    a permissive tolerance into a stricter one and FAILs every real post.
+    def history(self, **kwargs):
+        return self._df
+
+
+def _history_df(d: date, day_low: float, prior_min: float = 100.0,
+                n_prior: int = 252) -> pd.DataFrame:
+    """n_prior sessions with Low == prior_min, then a final session (=d)
+    with Low == day_low. 252 prior sessions keeps check_truth's PASS/WARN
+    split (len(prior) >= 200) on the PASS side."""
+    idx = pd.date_range(end=pd.Timestamp(d), periods=n_prior + 1, freq="D")
+    lows = [prior_min] * n_prior + [day_low]
+    return pd.DataFrame({"Low": lows}, index=idx)
+
+
+def run_truth(monkeypatch, ticker, d, day_low, prior_min=100.0):
+    df = _history_df(d, day_low, prior_min)
+    monkeypatch.setattr(yfinance, "Ticker", lambda t: _FakeTicker(df))
+    verify_day.results.update({"PASS": 0, "WARN": 0, "FAIL": 0})
+    verify_day.check_truth(ticker, d)
+    return verify_day.results
+
+
+@pytest.mark.parametrize("factor, expect", [
+    (0.995, "PASS"),    # comfortably below the prior minimum
+    (1.0, "PASS"),      # exact match
+    (1.0005, "PASS"),   # inside the 0.1% tolerance
+    (1.002, "FAIL"),    # just outside the tolerance
+    (1.05, "FAIL"),     # nowhere near a 52-week low
+])
+def test_check_truth_boundary(monkeypatch, factor, expect):
+    """Behavioural test of check_truth, driven at the tolerance boundary.
+
+    This replaces a source-text lint that asserted on the CHARACTERS of
+    verify_day.py (e.g. '"(1 + TRUTH_TOLERANCE)" in src'). That lint passed
+    even after the reviewer flipped the comparison operator to '>=' --
+    the auditor is the only automated check that this bot's public claims
+    are true, and a text lint blind to its own comparison operator is no
+    check at all. See test_operator_flip_would_be_caught below for the
+    discriminating proof.
     """
-    src = (ROOT / "scripts" / "verify_day.py").read_text()
-    assert 'df["Low"]' in src and 'df["High"]' not in src
-    assert "prior.min()" in src and "prior.max()" not in src
-    assert "(1 + TRUTH_TOLERANCE)" in src
-    assert "(1 - TRUTH_TOLERANCE)" not in src
-    assert "52-week low" in src and "52-week high" not in src
+    d = date(2026, 7, 20)
+    prior_min = 100.0
+    results = run_truth(monkeypatch, "XYZ", d, prior_min * factor, prior_min)
+    assert results[expect] == 1, results
+    for level in {"PASS", "WARN", "FAIL"} - {expect}:
+        assert results[level] == 0, results
