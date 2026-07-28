@@ -23,6 +23,12 @@
       "date": "2026-07-28",
       "post_id": null,
       "status": "posted"
+    },
+    {
+      "ticker": "MP",
+      "date": "2026-07-28",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
