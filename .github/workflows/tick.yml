@@ -32,14 +32,15 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
-      - name: Run tick (Phase 1 preview — dry-run, no token in this repo)
+      - name: Run tick (live — posts to @Stocktwits52wLows)
         env:
           # Launch caps: 1 post/tick (a 30-min trickle that dodges the
           # Stocktwits duplicate filter), 12/day. Repo defaults are 2/20.
           MAX_PER_TICK: "1"
           MAX_PER_DAY: "12"
           PYTHONUNBUFFERED: "1"
-        run: python run.py --sync-state
+          STOCKTWITS_ACCESS_TOKEN: ${{ secrets.STOCKTWITS_ACCESS_TOKEN }}
+        run: python run.py --sync-state --live
       - name: Commit state + output
         # always(): if the tick crashed mid-posting, the pending/confirmed
         # state on disk must still be persisted so nothing double-posts.
