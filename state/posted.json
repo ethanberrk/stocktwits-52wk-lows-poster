@@ -47,6 +47,12 @@
       "date": "2026-07-31",
       "post_id": "660614168",
       "status": "posted"
+    },
+    {
+      "ticker": "OTF",
+      "date": "2026-07-31",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
