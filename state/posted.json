@@ -17,6 +17,12 @@
       "date": "2026-07-31",
       "post_id": null,
       "status": "pending"
+    },
+    {
+      "ticker": "QXO",
+      "date": "2026-07-31",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
