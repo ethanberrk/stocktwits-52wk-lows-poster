@@ -149,6 +149,12 @@
       "date": "2026-08-05",
       "post_id": "661000273",
       "status": "posted"
+    },
+    {
+      "ticker": "REZI",
+      "date": "2026-08-05",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
