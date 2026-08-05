@@ -185,6 +185,12 @@
       "date": "2026-08-05",
       "post_id": "661031515",
       "status": "posted"
+    },
+    {
+      "ticker": "LKFT",
+      "date": "2026-08-05",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
