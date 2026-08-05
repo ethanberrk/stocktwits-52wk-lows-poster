@@ -155,6 +155,12 @@
       "date": "2026-08-05",
       "post_id": "661005559",
       "status": "posted"
+    },
+    {
+      "ticker": "TIMB",
+      "date": "2026-08-05",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
