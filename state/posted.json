@@ -263,6 +263,12 @@
       "date": "2026-08-07",
       "post_id": "661287895",
       "status": "posted"
+    },
+    {
+      "ticker": "WING",
+      "date": "2026-08-07",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
