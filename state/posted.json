@@ -215,6 +215,12 @@
       "date": "2026-08-06",
       "post_id": "661174602",
       "status": "posted"
+    },
+    {
+      "ticker": "PEG",
+      "date": "2026-08-07",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
