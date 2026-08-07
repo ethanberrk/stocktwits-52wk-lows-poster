@@ -251,6 +251,12 @@
       "date": "2026-08-07",
       "post_id": "661279218",
       "status": "posted"
+    },
+    {
+      "ticker": "TDS",
+      "date": "2026-08-07",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
