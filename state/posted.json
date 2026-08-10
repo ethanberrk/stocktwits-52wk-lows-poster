@@ -287,6 +287,12 @@
       "date": "2026-08-07",
       "post_id": "661304241",
       "status": "posted"
+    },
+    {
+      "ticker": "ZTS",
+      "date": "2026-08-10",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
