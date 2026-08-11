@@ -329,6 +329,12 @@
       "date": "2026-08-11",
       "post_id": "661539257",
       "status": "posted"
+    },
+    {
+      "ticker": "PPC",
+      "date": "2026-08-11",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
