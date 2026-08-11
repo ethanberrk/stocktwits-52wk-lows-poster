@@ -345,8 +345,8 @@
     {
       "ticker": "POST",
       "date": "2026-08-11",
-      "post_id": null,
-      "status": "pending"
+      "post_id": "661553018",
+      "status": "posted"
     }
   ]
 }
