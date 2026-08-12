@@ -377,6 +377,12 @@
       "date": "2026-08-12",
       "post_id": "661645786",
       "status": "posted"
+    },
+    {
+      "ticker": "GME",
+      "date": "2026-08-12",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
