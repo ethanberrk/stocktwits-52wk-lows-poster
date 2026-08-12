@@ -383,6 +383,12 @@
       "date": "2026-08-12",
       "post_id": "661652385",
       "status": "posted"
+    },
+    {
+      "ticker": "UVV",
+      "date": "2026-08-12",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
