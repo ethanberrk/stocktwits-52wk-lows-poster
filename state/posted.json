@@ -371,6 +371,12 @@
       "date": "2026-08-11",
       "post_id": "661580886",
       "status": "posted"
+    },
+    {
+      "ticker": "ROL",
+      "date": "2026-08-12",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
