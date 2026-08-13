@@ -443,6 +443,12 @@
       "date": "2026-08-13",
       "post_id": "661799905",
       "status": "posted"
+    },
+    {
+      "ticker": "TIMB",
+      "date": "2026-08-13",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
