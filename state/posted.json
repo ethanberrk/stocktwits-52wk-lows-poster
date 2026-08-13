@@ -437,6 +437,12 @@
       "date": "2026-08-13",
       "post_id": "661794862",
       "status": "posted"
+    },
+    {
+      "ticker": "FMC",
+      "date": "2026-08-13",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
