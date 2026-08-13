@@ -431,6 +431,12 @@
       "date": "2026-08-13",
       "post_id": "661789555",
       "status": "posted"
+    },
+    {
+      "ticker": "CLBT",
+      "date": "2026-08-13",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
