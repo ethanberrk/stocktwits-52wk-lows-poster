@@ -455,6 +455,12 @@
       "date": "2026-08-14",
       "post_id": "661897373",
       "status": "posted"
+    },
+    {
+      "ticker": "VIV",
+      "date": "2026-08-14",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
