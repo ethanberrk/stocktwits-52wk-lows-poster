@@ -533,6 +533,12 @@
       "date": "2026-08-17",
       "post_id": "662086392",
       "status": "posted"
+    },
+    {
+      "ticker": "IEP",
+      "date": "2026-08-17",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
