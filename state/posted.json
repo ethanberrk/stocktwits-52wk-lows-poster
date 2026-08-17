@@ -515,6 +515,12 @@
       "date": "2026-08-17",
       "post_id": "662070303",
       "status": "posted"
+    },
+    {
+      "ticker": "RBA",
+      "date": "2026-08-17",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
