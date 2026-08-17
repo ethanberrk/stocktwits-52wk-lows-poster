@@ -545,6 +545,12 @@
       "date": "2026-08-17",
       "post_id": "662097777",
       "status": "posted"
+    },
+    {
+      "ticker": "GPI",
+      "date": "2026-08-17",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
