@@ -521,6 +521,12 @@
       "date": "2026-08-17",
       "post_id": "662074572",
       "status": "posted"
+    },
+    {
+      "ticker": "VICI",
+      "date": "2026-08-17",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
