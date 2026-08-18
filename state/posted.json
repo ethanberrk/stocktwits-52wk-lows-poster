@@ -593,6 +593,12 @@
       "date": "2026-08-18",
       "post_id": "662189455",
       "status": "posted"
+    },
+    {
+      "ticker": "PAC",
+      "date": "2026-08-18",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
