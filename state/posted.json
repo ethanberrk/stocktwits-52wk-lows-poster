@@ -599,6 +599,12 @@
       "date": "2026-08-18",
       "post_id": "662193264",
       "status": "posted"
+    },
+    {
+      "ticker": "STNE",
+      "date": "2026-08-18",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
