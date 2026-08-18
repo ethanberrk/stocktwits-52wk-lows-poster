@@ -611,6 +611,12 @@
       "date": "2026-08-18",
       "post_id": "662201213",
       "status": "posted"
+    },
+    {
+      "ticker": "CSAN",
+      "date": "2026-08-18",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
