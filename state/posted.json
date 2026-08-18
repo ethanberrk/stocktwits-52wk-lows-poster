@@ -569,6 +569,12 @@
       "date": "2026-08-18",
       "post_id": "662166347",
       "status": "posted"
+    },
+    {
+      "ticker": "LII",
+      "date": "2026-08-18",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
