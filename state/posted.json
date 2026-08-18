@@ -587,6 +587,12 @@
       "date": "2026-08-18",
       "post_id": "662181487",
       "status": "posted"
+    },
+    {
+      "ticker": "ESAB",
+      "date": "2026-08-18",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
