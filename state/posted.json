@@ -563,6 +563,12 @@
       "date": "2026-08-18",
       "post_id": null,
       "status": "pending"
+    },
+    {
+      "ticker": "ROL",
+      "date": "2026-08-18",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
