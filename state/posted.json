@@ -635,6 +635,12 @@
       "date": "2026-08-19",
       "post_id": "662287391",
       "status": "posted"
+    },
+    {
+      "ticker": "RTO",
+      "date": "2026-08-19",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
