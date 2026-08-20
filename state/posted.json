@@ -689,6 +689,12 @@
       "date": "2026-08-20",
       "post_id": "662426305",
       "status": "posted"
+    },
+    {
+      "ticker": "BWXT",
+      "date": "2026-08-20",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
