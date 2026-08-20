@@ -725,6 +725,12 @@
       "date": "2026-08-20",
       "post_id": "662452756",
       "status": "posted"
+    },
+    {
+      "ticker": "WD",
+      "date": "2026-08-20",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
