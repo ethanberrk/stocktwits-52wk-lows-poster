@@ -707,6 +707,12 @@
       "date": "2026-08-20",
       "post_id": "662440043",
       "status": "posted"
+    },
+    {
+      "ticker": "CIG",
+      "date": "2026-08-20",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
