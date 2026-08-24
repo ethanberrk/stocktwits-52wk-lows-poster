@@ -815,6 +815,12 @@
       "date": "2026-08-24",
       "post_id": "662721843",
       "status": "posted"
+    },
+    {
+      "ticker": "CPRI",
+      "date": "2026-08-24",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
