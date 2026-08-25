@@ -833,6 +833,12 @@
       "date": "2026-08-25",
       "post_id": "662781120",
       "status": "posted"
+    },
+    {
+      "ticker": "WSO",
+      "date": "2026-08-25",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
