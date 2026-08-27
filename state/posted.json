@@ -929,6 +929,12 @@
       "date": "2026-08-27",
       "post_id": "663024069",
       "status": "posted"
+    },
+    {
+      "ticker": "CRUS",
+      "date": "2026-08-27",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
