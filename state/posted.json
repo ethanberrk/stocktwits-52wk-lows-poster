@@ -941,6 +941,12 @@
       "date": "2026-08-27",
       "post_id": "663032404",
       "status": "posted"
+    },
+    {
+      "ticker": "HWKN",
+      "date": "2026-08-27",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
