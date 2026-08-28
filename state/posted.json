@@ -1001,6 +1001,12 @@
       "date": "2026-08-28",
       "post_id": "663134995",
       "status": "posted"
+    },
+    {
+      "ticker": "BBUC",
+      "date": "2026-08-28",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
