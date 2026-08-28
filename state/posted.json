@@ -989,6 +989,12 @@
       "date": "2026-08-28",
       "post_id": "663127380",
       "status": "posted"
+    },
+    {
+      "ticker": "OLN",
+      "date": "2026-08-28",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
