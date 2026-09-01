@@ -1139,6 +1139,12 @@
       "date": "2026-09-01",
       "post_id": "663364399",
       "status": "posted"
+    },
+    {
+      "ticker": "JOBY",
+      "date": "2026-09-01",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
