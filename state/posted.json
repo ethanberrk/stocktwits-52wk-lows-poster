@@ -1151,6 +1151,12 @@
       "date": "2026-09-01",
       "post_id": "663372011",
       "status": "posted"
+    },
+    {
+      "ticker": "TJX",
+      "date": "2026-09-02",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
