@@ -1,0 +1,23 @@
+{
+ "time": "2026-09-03T18:47:42+00:00",
+ "active": "legacy",
+ "shadow": "xignite",
+ "counts": {
+  "active": 26,
+  "shadow": 26,
+  "both": 26
+ },
+ "only_in_active": [],
+ "only_in_shadow": [],
+ "would_pick": {
+  "legacy": [
+   "FDXF",
+   "JMKE"
+  ],
+  "xignite": [
+   "FDXF",
+   "JMKE"
+  ]
+ },
+ "picks_agree": true
+}
