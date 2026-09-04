@@ -1,0 +1,25 @@
+{
+ "time": "2026-09-04T18:16:00+00:00",
+ "active": "legacy",
+ "shadow": "xignite",
+ "counts": {
+  "active": 12,
+  "shadow": 11,
+  "both": 11
+ },
+ "only_in_active": [
+  "PSQL"
+ ],
+ "only_in_shadow": [],
+ "would_pick": {
+  "legacy": [
+   "CSQR",
+   "PSQL"
+  ],
+  "xignite": [
+   "CSQR",
+   "HAWK"
+  ]
+ },
+ "picks_agree": false
+}
