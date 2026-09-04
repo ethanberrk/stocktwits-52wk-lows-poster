@@ -1,0 +1,25 @@
+{
+ "time": "2026-09-04T15:16:01+00:00",
+ "active": "legacy",
+ "shadow": "xignite",
+ "counts": {
+  "active": 10,
+  "shadow": 9,
+  "both": 9
+ },
+ "only_in_active": [
+  "PSQL"
+ ],
+ "only_in_shadow": [],
+ "would_pick": {
+  "legacy": [
+   "HAWK",
+   "PSQL"
+  ],
+  "xignite": [
+   "HAWK",
+   "WINA"
+  ]
+ },
+ "picks_agree": false
+}
