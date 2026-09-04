@@ -1,0 +1,25 @@
+{
+ "time": "2026-09-04T13:46:04+00:00",
+ "active": "legacy",
+ "shadow": "xignite",
+ "counts": {
+  "active": 4,
+  "shadow": 2,
+  "both": 2
+ },
+ "only_in_active": [
+  "ROL",
+  "WINA"
+ ],
+ "only_in_shadow": [],
+ "would_pick": {
+  "legacy": [
+   "ROL",
+   "LULU"
+  ],
+  "xignite": [
+   "LULU"
+  ]
+ },
+ "picks_agree": false
+}
