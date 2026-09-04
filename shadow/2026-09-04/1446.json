@@ -1,0 +1,26 @@
+{
+ "time": "2026-09-04T14:46:11+00:00",
+ "active": "legacy",
+ "shadow": "xignite",
+ "counts": {
+  "active": 8,
+  "shadow": 5,
+  "both": 5
+ },
+ "only_in_active": [
+  "KRMN",
+  "MCD",
+  "PSQL"
+ ],
+ "only_in_shadow": [],
+ "would_pick": {
+  "legacy": [
+   "KRMN",
+   "PSQL"
+  ],
+  "xignite": [
+   "WINA"
+  ]
+ },
+ "picks_agree": false
+}
