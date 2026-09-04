@@ -1319,6 +1319,12 @@
       "date": "2026-09-04",
       "post_id": "663649488",
       "status": "posted"
+    },
+    {
+      "ticker": "WINA",
+      "date": "2026-09-04",
+      "post_id": null,
+      "status": "pending"
     }
   ]
 }
